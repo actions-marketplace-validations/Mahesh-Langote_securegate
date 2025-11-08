@@ -1,6 +1,6 @@
-name: 'SecureGate'
+name: 'Flutter Security Gate'
 description: 'Scan Flutter/Dart dependencies for vulnerabilities and license issues'
-author: 'Your Name'
+author: 'Mahesh-Langote'
 branding:
   icon: 'shield'
   color: 'blue'
