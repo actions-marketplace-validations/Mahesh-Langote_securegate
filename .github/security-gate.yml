@@ -1,0 +1,36 @@
+# SecureGate Configuration
+# Configure security scanning behavior for your Flutter/Dart project
+
+# Enforcement mode
+# - "block": Fail the CI job if issues are found
+# - "annotate": Post results as comments but don't fail the job
+mode: block
+
+# List of banned licenses
+# Packages with these licenses will trigger a failure/warning
+banned_licenses:
+  - GPL-3.0
+  - AGPL-3.0
+  - SSPL-1.0
+  - proprietary
+  - Commons Clause
+
+# Minimum severity level to trigger action
+# Options: INFO, LOW, MEDIUM, HIGH, CRITICAL
+# Only vulnerabilities at or above this level will cause blocking
+severity_threshold: HIGH
+
+# Whitelist specific packages from license checking
+# Use this for packages you've reviewed and approved
+whitelist:
+  # - package_name_here
+
+# Ignore specific packages from vulnerability scanning
+ignore_packages:
+  # - dev_dependency_name
+
+# Ignore specific vulnerability IDs
+# Use this for false positives or accepted risks
+ignore_vulnerabilities:
+  # - CVE-2024-12345
+  # - GHSA-xxxx-xxxx-xxxx

@@ -1,0 +1,86 @@
+name: 'SecureGate'
+description: 'Scan Flutter/Dart dependencies for vulnerabilities and license issues'
+author: 'Your Name'
+branding:
+  icon: 'shield'
+  color: 'blue'
+
+inputs:
+  config-path:
+    description: 'Path to security-gate.yml configuration file'
+    required: false
+    default: '.github/security-gate.yml'
+  github-token:
+    description: 'GitHub token for posting comments'
+    required: true
+    default: ${{ github.token }}
+  working-directory:
+    description: 'Working directory containing pubspec.lock'
+    required: false
+    default: '.'
+
+outputs:
+  vulnerabilities-found:
+    description: 'Number of vulnerabilities found'
+    value: ${{ steps.scan.outputs.vulnerabilities-found }}
+  license-issues-found:
+    description: 'Number of license issues found'
+    value: ${{ steps.scan.outputs.license-issues-found }}
+  status:
+    description: 'Scan status (passed/failed)'
+    value: ${{ steps.scan.outputs.status }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Install OSV Scanner
+      shell: bash
+      run: |
+        curl -Lo osv-scanner https://github.com/google/osv-scanner/releases/latest/download/osv-scanner_linux_amd64
+        chmod +x osv-scanner
+        sudo mv osv-scanner /usr/local/bin/
+    
+    - name: Install Python dependencies
+      shell: bash
+      run: |
+        pip install --upgrade pip
+        pip install -r ${{ github.action_path }}/requirements.txt
+    
+    - name: Install Dart/Flutter tools
+      uses: dart-lang/setup-dart@v1
+      with:
+        sdk: stable
+    
+    - name: Activate pana
+      shell: bash
+      run: dart pub global activate pana
+    
+    - name: Run security scan
+      id: scan
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        CONFIG_PATH: ${{ inputs.config-path }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
+        GITHUB_EVENT_NAME: ${{ github.event_name }}
+        GITHUB_REF: ${{ github.ref }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+      run: python ${{ github.action_path }}/scanner.py
+    
+    - name: Upload scan reports
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: security-scan-reports
+        path: |
+          osv-report.json
+          license-report.json
+          report.md
+          final-report.json
+        retention-days: 30

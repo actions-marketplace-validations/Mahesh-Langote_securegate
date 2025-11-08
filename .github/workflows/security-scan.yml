@@ -1,0 +1,48 @@
+name: Security Scan
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  security-scan:
+    name: Run SecureGate
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Run SecureGate Scanner
+        id: securegate
+        uses: yourusername/securegate@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          config-path: .github/security-gate.yml
+          working-directory: ./
+      
+      - name: Display scan results
+        if: always()
+        run: |
+          echo "Vulnerabilities found: ${{ steps.securegate.outputs.vulnerabilities-found }}"
+          echo "License issues found: ${{ steps.securegate.outputs.license-issues-found }}"
+          echo "Scan status: ${{ steps.securegate.outputs.status }}"
+      
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-reports
+          path: |
+            report.md
+            final-report.json
+            osv-report.json
+            license-report.json
