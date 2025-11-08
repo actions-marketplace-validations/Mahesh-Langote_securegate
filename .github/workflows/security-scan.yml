@@ -23,7 +23,7 @@ jobs:
       
       - name: Run SecureGate Scanner
         id: securegate
-        uses: yourusername/securegate@v1
+        uses: Mahesh-Langote/securegate@v1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           config-path: .github/security-gate.yml
